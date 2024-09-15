@@ -1,6 +1,4 @@
-# 🐠 Ubuntu Fish Pro Setup
 
-![Ubuntu Fish Pro Banner](https://via.placeholder.com/800x200?text=Ubuntu+Fish+Pro+Setup)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
