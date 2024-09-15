@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Define colors
@@ -23,7 +22,7 @@ spinner() {
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
+        spinstr=$temp${spinstr%"$temp"}
         sleep $delay
         printf "\b\b\b\b\b\b"
     done
@@ -98,9 +97,9 @@ setup_fish_config() {
     cat << EOF > "$config"
 function fish_greeting
     echo -e "${Yellow}Welcome to your advanced Ubuntu Fish setup!${Color_Off}"
-    echo -e "${Cyan}Current date: $(date)${Color_Off}"
-    echo -e "${Green}Uptime: $(uptime -p)${Color_Off}"
-    echo -e "${Blue}Fish shell version: $(fish --version | cut -d ' ' -f 3)${Color_Off}"
+    echo -e "${Cyan}Current date: (date)${Color_Off}"
+    echo -e "${Green}Uptime: (uptime -p)${Color_Off}"
+    echo -e "${Blue}Fish shell version: (fish --version | cut -d ' ' -f 3)${Color_Off}"
     echo
 end
 
@@ -168,10 +167,10 @@ function extract
             case '*.7z'
                 7z x \$argv[1]
             case '*'
-                echo "'\\$argv[1]' cannot be extracted via extract()"
+                echo "'\$argv[1]' cannot be extracted via extract()"
         end
     else
-        echo "'\\$argv[1]' is not a valid file"
+        echo "'\$argv[1]' is not a valid file"
     end
 end
 
