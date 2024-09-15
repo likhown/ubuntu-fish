@@ -1,113 +1,70 @@
-# 🐠 Ubuntu Fish Pro Setup
+```markdown
+# Ubuntu Fish Setup Script
 
-![Ubuntu Fish Pro Banner](https://github.com/likhown/ubuntu-fish/blob/main/preview/default.jpg?raw=true)
+## 🚀 Overview
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
-[![Fish Shell](https://img.shields.io/badge/Fish%20Shell-3.x-blue)](https://fishshell.com/)
+Easily set up and customize the Fish shell on Ubuntu with this automated script. It handles everything from installation to advanced configuration, ensuring a smooth terminal experience.
 
-> Transform your Ubuntu terminal into a powerhouse of productivity and style!
+## 🛠️ Features
 
-Ubuntu Fish Pro Setup is a sophisticated script that automates the installation and configuration of Fish shell on Ubuntu systems, providing an advanced, feature-rich, and visually appealing command-line experience.
+- **Dependency Installation**: Installs Fish, Figlet, Neofetch, and more.
+- **Custom Fish Configuration**: Advanced aliases, functions, and color schemes.
+- **Starship Prompt**: Optionally installs and configures Starship for a modern prompt.
+- **VS Code Integration**: Optional setup for VS Code with Fish extensions.
+- **Fuzzy Finder**: Integrates `fzf` for an enhanced file-search experience.
 
-## ✨ Features
+## 📥 Installation
 
-- 🚀 Automatic installation of essential and advanced dependencies
-- 🎨 Custom Fish shell configuration with powerful aliases and functions
-- 🔍 Fuzzy finding capabilities with fzf integration
-- 📊 System information display using neofetch (optional)
-- 🔄 Automatic update checks for the setup script
-- ⚙️ Sets Fish as the default shell
-- 🌟 Starship prompt installation for a minimalist and informative prompt (optional)
-- 🧰 VS Code integration with Fish-friendly extensions (optional)
+1. **Clone the Repository**
 
-## 🛠️ Prerequisites
-
-- Ubuntu-based system (tested on Ubuntu 20.04 LTS and above)
-- Sudo privileges
-- Internet connection
-
-## 🚀 Quick Start
-
-1. **Download the script:**
    ```bash
-   wget https://raw.githubusercontent.com/likhown/ubuntu-fish/main/setup_fish.sh
+   git clone https://github.com/likhown/ubuntu-fish.git
    ```
 
-2. **Make the script executable:**
+2. **Navigate to the Directory**
+
+   ```bash
+   cd ubuntu-fish
+   ```
+
+3. **Make the Script Executable**
+
    ```bash
    chmod +x setup_fish.sh
    ```
 
-3. **Run the script:**
+4. **Run the Script**
+
    ```bash
    ./setup_fish.sh
    ```
 
-4. **Follow the on-screen prompts** to customize your setup.
+   Follow the interactive prompts to customize your setup.
 
-5. **Restart your terminal** or log out and log back in to apply all changes.
+## 🔧 Configuration
 
-## 🎛️ What's Included
+- **Neofetch**: Choose to display the Ubuntu logo on your Fish homepage.
+- **Starship Prompt**: Decide whether to install the Starship prompt.
+- **VS Code**: Optionally install VS Code extensions for Fish integration.
 
-The Ubuntu Fish Pro Setup enhances your terminal with:
+## 📈 Check for Updates
 
-- **Fish Shell**: A smart and user-friendly command line shell.
-- **Advanced Aliases**: Shortcuts for common commands and git operations.
-- **Custom Functions**: Utilities like `mkcd` and `extract` for improved workflow.
-- **Modern CLI Tools**:
-  - `exa`: A modern replacement for `ls`.
-  - `bat`: A `cat` clone with syntax highlighting.
-  - `fzf`: A command-line fuzzy finder.
-  - `htop`: An interactive process viewer.
-  - `tldr`: Simplified and community-driven man pages.
-- **Starship Prompt** (Optional): A minimal, blazing-fast, and infinitely customizable prompt.
-- **VS Code Integration** (Optional): Sets up VS Code with Fish-friendly extensions.
-
-## 🎨 Customization
-
-You can further customize your Fish shell by editing the config file:
-
-```bash
-nano ~/.config/fish/config.fish
-```
-
-For Starship prompt customization, edit:
-
-```bash
-nano ~/.config/starship.toml
-```
-
-## 🔄 Updating
-
-The script checks for updates automatically. If an update is available, you'll be notified and provided with a link to download the latest version.
-
-## 🐛 Troubleshooting
-
-If you encounter any issues:
-
-1. Ensure you have an active internet connection.
-2. Verify that you have sudo privileges.
-3. Check system logs for any error messages.
-
-For persistent problems, please [open an issue](https://github.com/likhown/ubuntu-fish/issues) on the GitHub repository.
+The script checks for updates automatically. To view the latest version, visit the [update page](https://github.com/likhown/ubuntu-fish/blob/main/setup_fish.sh).
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! To report issues or suggest features, please open an issue or submit a pull request on GitHub.
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
-## 👤 Author
+## 📬 Contact
 
-Created with ❤️ by [@likhown](https://github.com/likhown)
+For questions or feedback:
 
-For more information and updates, visit [https://t.me/likhondotxyz](https://t.me/likhondotxyz)
+- **Author**: [@likhown](https://t.me/likhondotxyz)
+- **GitHub**: [likhown/ubuntu-fish](https://github.com/likhown/ubuntu-fish)
 
----
-
-<p align="center">
-  Made with 🐠 by the Ubuntu Fish Pro team
-</p>
+Enjoy a seamless Fish shell experience on Ubuntu!
+```
