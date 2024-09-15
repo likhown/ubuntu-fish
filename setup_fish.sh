@@ -292,3 +292,4 @@ echo -e "${Green}Advanced Ubuntu Fish setup complete!\n\nPlease restart your ter
 echo -e "For more information, visit ${Blue}${author_url}${Green} and follow ${Blue}${author_handle}${Green}."
 read -p "Press Enter to open the author's page in your browser..."
 open_in_browser "$author_url"
+ 
