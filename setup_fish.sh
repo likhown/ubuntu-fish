@@ -8,16 +8,17 @@ Yellow='\033[0;33m'
 Blue='\033[0;34m'
 Cyan='\033[0;36m'
 
-# Define paths
+# Define paths and variables
 config="$HOME/.config/fish/config.fish"
-update_check_url="https://github.com/likhown/ubuntu-fish/blob/main/setup_fish.sh"
+update_check_url="https://raw.githubusercontent.com/likhown/ubuntu-fish/main/version.txt"
 author_handle="@likhown"
+current_version="1.4"
 
 # Function to display spinner
 spinner() {
     local pid=$1
     local delay=0.1
-    local spinstr='|/-\' 
+    local spinstr='|/-\'
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf " [%c]  " "$spinstr"
@@ -28,11 +29,15 @@ spinner() {
     printf "    \b\b\b\b"
 }
 
+# Function to log messages
+log_message() {
+    echo -e "${2:-$Green}$(date '+%Y-%m-%d %H:%M:%S') - $1${Color_Off}"
+}
+
 # Function to check and install dependencies
 prerequisite() {
-    echo -e "${Green}Installing Dependencies...${Cyan}"
-    echo
-    local deps=(fish figlet neofetch curl fzf exa bat htop tldr zsh git gh python3 python3-pip)
+    log_message "Installing Dependencies..." "$Cyan"
+    local deps=(fish figlet neofetch curl fzf bat htop tldr zsh git ripgrep fd-find jq tmux ranger vim)
     local to_install=()
 
     for dep in "${deps[@]}"; do
@@ -42,65 +47,63 @@ prerequisite() {
     done
 
     if [ ${#to_install[@]} -eq 0 ]; then
-        echo "${Green}All dependencies are already installed!"
+        log_message "All dependencies are already installed!"
     else
-        echo "${Yellow}Installing: ${to_install[*]}"
+        log_message "Installing: ${to_install[*]}" "$Yellow"
         sudo apt update -y
-        sudo apt install -y "${to_install[@]}" &
-        spinner $!
-        if [ $? -eq 0 ]; then
-            echo
-            echo "${Green}Dependencies successfully installed!"
-        else
-            echo
-            echo "${Red}Error occurred, failed to install dependencies."
-            echo -e $Color_Off
-            exit 1
-        fi
+        for dep in "${to_install[@]}"; do
+            log_message "Installing $dep..."
+            sudo apt install -y $dep
+            if [ $? -ne 0 ]; then
+                log_message "Failed to install $dep. Exiting." "$Red"
+                exit 1
+            fi
+        done
+        log_message "Dependencies successfully installed!"
     fi
 }
 
 # Function to check for updates
 check_for_updates() {
-    echo -e "${Green}Checking for updates...${Cyan}"
-    echo
-    local latest_version=$(curl -sL "$update_check_url" | grep -oP '(?<=Version: )[0-9.]+')
-    local current_version="1.2"  # Update this when you release a new version
+    log_message "Checking for updates..." "$Cyan"
+    local latest_version=$(curl -sL "$update_check_url")
     if [ "$latest_version" = "$current_version" ]; then
-        echo -e "${Green}You are using the latest version ($current_version) of the setup script."
+        log_message "You are using the latest version ($current_version) of the setup script."
     else
-        echo -e "${Yellow}An update is available: $latest_version (current: $current_version)"
-        echo -e "${Blue}Visit $update_check_url to download the latest version."
+        log_message "An update is available: $latest_version (current: $current_version)" "$Yellow"
+        log_message "Visit https://github.com/likhown/ubuntu-fish to download the latest version." "$Blue"
     fi
-    echo
 }
 
-# Function to clear /etc/motd and other system messages
+# Function to clear system messages and remove default Ubuntu welcome
 clear_system_messages() {
-    echo -e "${Green}Clearing system messages...${Cyan}"
+    log_message "Clearing system messages and removing default Ubuntu welcome..." "$Cyan"
     sudo sh -c 'echo "" > /etc/motd'
-    sudo sh -c 'echo "" > /etc/motd.tail'
-    sudo sh -c 'echo "" > /etc/motd.dynamic'
-    echo -e "${Green}System messages cleared.${Color_Off}"
+    sudo sh -c 'echo "" > /etc/issue'
+    sudo sh -c 'echo "" > /etc/issue.net'
+    sudo sed -i '/^session    optional     pam_motd.so/d' /etc/pam.d/sshd
+    sudo sed -i '/^session    optional     pam_motd.so/d' /etc/pam.d/login
+    log_message "System messages and default Ubuntu welcome removed."
 }
 
 # Function to remove old Fish configuration
 remove_old_fish_config() {
-    echo -e "${Green}Removing old Fish configuration...${Cyan}"
+    log_message "Removing old Fish configuration..." "$Cyan"
     rm -f "$config"
-    echo -e "${Green}Old Fish configuration removed.${Color_Off}"
+    log_message "Old Fish configuration removed."
 }
 
 # Function to setup Fish configuration
 setup_fish_config() {
-    echo -e "${Green}Setting up Fish configuration...${Cyan}"
+    log_message "Setting up Fish configuration..." "$Cyan"
     mkdir -p "$HOME/.config/fish"
     cat << EOF > "$config"
 function fish_greeting
-    echo -e "${Yellow}Welcome to Ubuntu!${Color_Off}"
-    echo -e "${Cyan}Current Date: (date)${Color_Off}"
-    echo -e "${Green}Uptime: (uptime -p)${Color_Off}"
+    echo -e "${Yellow}Welcome to your advanced Ubuntu Fish environment!${Color_Off}"
+    echo -e "${Cyan}Current Date: $(date)${Color_Off}"
+    echo -e "${Green}Uptime: $(uptime -p)${Color_Off}"
     echo
+    neofetch
 end
 
 # Advanced aliases
@@ -117,7 +120,7 @@ alias top='htop'
 alias df='df -h'
 alias du='du -h'
 alias free='free -m'
-alias fishconfig='nano ~/.config/fish/config.fish'
+alias fishconfig='vim ~/.config/fish/config.fish'
 alias weather='curl wttr.in'
 alias cheat='tldr'
 
@@ -166,24 +169,39 @@ function extract
     end
 end
 
-# Custom key bindings
-function fish_user_key_bindings
-    bind \cr 'history-search-backward'
-    bind \cf 'fzf_select_file'
+# Advanced fuzzy finder functions
+function fzf_find_file
+    begin
+        fd --type f --hidden --follow --exclude .git | fzf --preview 'bat --style=numbers --color=always {}'
+    end | read -l result; and commandline -i (echo \$result | string escape)
+    commandline -f repaint
 end
 
-# Fuzzy file finder function
-function fzf_select_file
-    set -l file (fzf)
-    if test -n "\$file"
-        commandline -i "\$file"
+function fzf_find_history
+    history | fzf --no-sort --exact | read -l command
+    if test \$command
+        commandline -r \$command
     end
     commandline -f repaint
 end
 
+function fzf_find_directory
+    begin
+        fd --type d --hidden --follow --exclude .git | fzf --preview 'tree -C {} | head -100'
+    end | read -l result; and cd \$result
+    commandline -f repaint
+end
+
+# Key bindings
+function fish_user_key_bindings
+    bind \cf fzf_find_file
+    bind \cr fzf_find_history
+    bind \cd fzf_find_directory
+end
+
 # Set environment variables
 set -gx PATH \$HOME/.local/bin \$PATH
-set -gx EDITOR nano
+set -gx EDITOR vim
 
 # Set color scheme
 set -U fish_color_normal normal
@@ -211,27 +229,77 @@ set -U fish_pager_color_prefix white --bold --underline
 set -U fish_pager_color_completion normal
 set -U fish_pager_color_description B3A06D yellow
 set -U fish_pager_color_progress brwhite --background=cyan
-EOF
 
-    if [ "$add_neofetch" = "y" ]; then
-        echo "neofetch" >> "$config"
-    fi
-    echo -e "${Green}Advanced Fish configuration set up successfully.${Color_Off}"
+# Load Starship prompt if installed
+if command -v starship > /dev/null
+    starship init fish | source
+end
+
+# Advanced features
+set -g fish_key_bindings fish_vi_key_bindings
+set -g fish_cursor_default block
+set -g fish_cursor_insert line
+set -g fish_cursor_replace_one underscore
+set -g fish_cursor_visual block
+EOF
+    log_message "Advanced Fish configuration set up successfully."
 }
 
 # Function to install and configure Starship prompt
 install_starship() {
-    echo -e "${Green}Installing Starship prompt...${Cyan}"
-    curl -fsSL https://starship.rs/install.sh | sh
-    echo 'starship init fish | source' >> "$config"
+    log_message "Installing Starship prompt..." "$Cyan"
+    curl -fsSL https://starship.rs/install.sh | sh -s -- -y
+    if [ $? -ne 0 ]; then
+        log_message "Failed to install Starship. Exiting." "$Red"
+        exit 1
+    fi
     mkdir -p ~/.config && touch ~/.config/starship.toml
-    echo 'format = "$all"' > ~/.config/starship.toml
-    echo -e "${Green}Starship prompt installed and configured.${Color_Off}"
+    cat << EOF > ~/.config/starship.toml
+[character]
+success_symbol = "[➜](bold green) "
+error_symbol = "[✗](bold red) "
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow)"
+
+[directory]
+truncation_length = 3
+format = "[$path]($style)[$read_only]($read_only_style) "
+
+[git_branch]
+format = "on [$symbol$branch]($style) "
+symbol = "🌱 "
+style = "bold purple"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+
+[nodejs]
+format = "via [🤖 $version](bold green) "
+
+[package]
+format = "via [🎁 $version](208 bold) "
+
+[python]
+format = "via [🐍 $version](bold blue) "
+
+[rust]
+format = "via [⚙️ $version](bold red) "
+
+[time]
+disabled = false
+format = '[\[ $time \]]($style) '
+time_format = "%T"
+style = "bright-black"
+EOF
+    log_message "Starship prompt installed and configured."
 }
 
 # Function to set up VS Code with Fish integration
 setup_vscode() {
-    echo -e "${Green}Setting up VS Code with Fish integration...${Cyan}"
+    log_message "Setting up VS Code with Fish integration..." "$Cyan"
     if command -v code &> /dev/null; then
         code --install-extension ms-vscode.cpptools
         code --install-extension ms-python.python
@@ -239,58 +307,62 @@ setup_vscode() {
         code --install-extension esbenp.prettier-vscode
         code --install-extension eamodio.gitlens
         code --install-extension bmalehorn.vscode-fish
-        echo -e "${Green}VS Code extensions installed.${Color_Off}"
+        code --install-extension vscodevim.vim
+        code --install-extension ms-azuretools.vscode-docker
+        code --install-extension ms-vscode-remote.remote-containers
+        log_message "VS Code extensions installed."
     else
-        echo -e "${Yellow}VS Code not found. Skipping VS Code setup.${Color_Off}"
+        log_message "VS Code not found. Skipping VS Code setup." "$Yellow"
     fi
 }
 
-# Function to install Zsh and configure it
+# Function to install Zsh and Oh My Zsh
 install_zsh() {
-    echo -e "${Green}Installing Zsh...${Cyan}"
-    sudo apt install -y zsh &
-    spinner $!
-    if [ $? -eq 0 ]; then
-        echo -e "${Green}Zsh installed successfully.${Color_Off}"
-        chsh -s /usr/bin/zsh
-        echo -e "${Green}Zsh set as the default shell.${Color_Off}"
-    else
-        echo -e "${Red}Failed to install Zsh.${Color_Off}"
+    log_message "Installing Zsh and Oh My Zsh..." "$Cyan"
+    sudo apt install -y zsh
+    if [ $? -ne 0 ]; then
+        log_message "Failed to install Zsh. Exiting." "$Red"
+        exit 1
     fi
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    log_message "Zsh and Oh My Zsh installed successfully."
 }
 
 # Function to install Node.js (JavaScript)
 install_nodejs() {
-    echo -e "${Green}Installing Node.js (JavaScript)...${Cyan}"
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt install -y nodejs &
-    spinner $!
-    if [ $? -eq 0 ]; then
-        echo -e "${Green}Node.js installed successfully.${Color_Off}"
-    else
-        echo -e "${Red}Failed to install Node.js.${Color_Off}"
+    log_message "Installing Node.js (JavaScript)..." "$Cyan"
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt install -y nodejs
+    if [ $? -ne 0 ]; then
+        log_message "Failed to install Node.js. Exiting." "$Red"
+        exit 1
     fi
+    log_message "Node.js installed successfully."
 }
 
 # Function to install GitHub CLI
 install_github_cli() {
-    echo -e "${Green}Installing GitHub CLI...${Cyan}"
-    sudo apt install -y gh &
-    spinner $!
-    if [ $? -eq 0 ]; then
-        echo -e "${Green}GitHub CLI installed successfully.${Color_Off}"
-    else
-        echo -e "${Red}Failed to install GitHub CLI.${Color_Off}"
+    log_message "Installing GitHub CLI..." "$Cyan"
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo apt update
+    sudo apt install gh -y
+    if [ $? -ne 0 ]; then
+        log_message "Failed to install GitHub CLI. Exiting." "$Red"
+        exit 1
     fi
+    log_message "GitHub CLI installed successfully."
 }
 
-# Function to remove old PS1 messages
-remove_old_ps1() {
-    echo -e "${Green}Removing old PS1 messages...${Cyan}"
-    sed -i '/^Welcome to Ubuntu/d' ~/.bashrc
-    sed -i '/^New release/d' ~/.bashrc
-    sed -i '/^Last login/d' ~/.bashrc
-    echo -e "${Green}Old PS1 messages removed.${Color_Off}"
+# Function to set Fish as default shell
+set_fish_as_default() {
+    log_message "Setting Fish as the default shell..." "$Cyan"
+    sudo chsh -s $(which fish) $USER
+    if [ $? -ne 0 ]; then
+        log_message "Failed to set Fish as default shell. Exiting." "$Red"
+        exit 1
+    fi
+    log_message "Fish set as the default shell."
 }
 
 # Main script execution
@@ -298,9 +370,8 @@ clear
 echo -e $Red
 figlet -f slant "Ubuntu Fish Pro"
 echo -e $Color_Off
-echo -e "${Green}Welcome to the Ubuntu Fish Pro Setup Script${Color_Off}"
-echo -e "${Cyan}Please wait while we perform the setup...${Color_Off}"
-echo
+log_message "Welcome to the Advanced Automated Ubuntu Fish Pro Setup Script" "$Green"
+log_message "Starting setup process..." "$Cyan"
 
 # Run functions
 prerequisite
@@ -313,6 +384,11 @@ setup_vscode
 install_zsh
 install_nodejs
 install_github_cli
+set_fish_as_default
 
-echo -e "${Green}Setup completed successfully!${Color_Off}"
-echo -e "${Yellow}For support, join our Telegram group: @likhown${Color_Off}"
+log_message "Setup completed successfully!" "$Green"
+log_message "For support, join our Telegram group: $author_handle" "$Yellow"
+log_message "The system will now switch to Fish shell. Please log out and log back in for all changes to take effect." "$Cyan"
+
+# Switch to Fish shell
+exec fish
