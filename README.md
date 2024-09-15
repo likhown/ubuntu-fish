@@ -31,7 +31,7 @@ Ubuntu Fish Pro Setup is a sophisticated script that automates the installation 
 
 1. **Download the script:**
    ```bash
-   wget https://raw.githubusercontent.com/likhown/ubuntu-fish-pro/main/setup_fish.sh
+   wget https://raw.githubusercontent.com/likhown/ubuntu-fish/main/setup_fish.sh
    ```
 
 2. **Make the script executable:**
@@ -90,7 +90,7 @@ If you encounter any issues:
 2. Verify that you have sudo privileges.
 3. Check system logs for any error messages.
 
-For persistent problems, please [open an issue](https://github.com/likhown/ubuntu-fish-pro/issues) on the GitHub repository.
+For persistent problems, please [open an issue](https://github.com/likhown/ubuntu-fish/issues) on the GitHub repository.
 
 ## 🤝 Contributing
 
