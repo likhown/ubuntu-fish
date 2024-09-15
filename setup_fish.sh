@@ -11,14 +11,13 @@ Cyan='\033[0;36m'
 # Define paths
 config="$HOME/.config/fish/config.fish"
 update_check_url="https://github.com/likhown/ubuntu-fish/blob/main/setup_fish.sh"
-author_url="https://t.me/likhondotxyz"
 author_handle="@likhown"
 
 # Function to display spinner
 spinner() {
     local pid=$1
     local delay=0.1
-    local spinstr='|/-\'
+    local spinstr='|/-\' 
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
         printf " [%c]  " "$spinstr"
@@ -33,7 +32,7 @@ spinner() {
 prerequisite() {
     echo -e "${Green}Installing Dependencies...${Cyan}"
     echo
-    local deps=(fish figlet neofetch curl fzf exa bat htop tldr)
+    local deps=(fish figlet neofetch curl fzf exa bat htop tldr zsh git gh python3 python3-pip)
     local to_install=()
 
     for dep in "${deps[@]}"; do
@@ -76,39 +75,32 @@ check_for_updates() {
     echo
 }
 
-# Function to open URL in default browser
-open_in_browser() {
-    local url="$1"
-    if command -v xdg-open &> /dev/null; then
-        xdg-open "$url" &> /dev/null
-    elif command -v gnome-open &> /dev/null; then
-        gnome-open "$url" &> /dev/null
-    elif command -v open &> /dev/null; then
-        open "$url" &> /dev/null
-    else
-        echo -e "${Red}No suitable command found to open the browser.${Color_Off}"
-    fi
+# Function to clear /etc/motd and other system messages
+clear_system_messages() {
+    echo -e "${Green}Clearing system messages...${Cyan}"
+    sudo sh -c 'echo "" > /etc/motd'
+    sudo sh -c 'echo "" > /etc/motd.tail'
+    sudo sh -c 'echo "" > /etc/motd.dynamic'
+    echo -e "${Green}System messages cleared.${Color_Off}"
 }
 
-# Function to setup fish configuration
+# Function to remove old Fish configuration
+remove_old_fish_config() {
+    echo -e "${Green}Removing old Fish configuration...${Cyan}"
+    rm -f "$config"
+    echo -e "${Green}Old Fish configuration removed.${Color_Off}"
+}
+
+# Function to setup Fish configuration
 setup_fish_config() {
-    echo -e "${Green}Setting up fish configuration...${Cyan}"
+    echo -e "${Green}Setting up Fish configuration...${Cyan}"
     mkdir -p "$HOME/.config/fish"
     cat << EOF > "$config"
 function fish_greeting
-    echo -e "${Yellow}Welcome to your advanced Ubuntu Fish setup!${Color_Off}"
-    echo -e "${Cyan}Current date: (date)${Color_Off}"
+    echo -e "${Yellow}Welcome to Ubuntu!${Color_Off}"
+    echo -e "${Cyan}Current Date: (date)${Color_Off}"
     echo -e "${Green}Uptime: (uptime -p)${Color_Off}"
-    echo -e "${Blue}Fish shell version: (fish --version | cut -d ' ' -f 3)${Color_Off}"
     echo
-end
-
-function __fish_command_not_found_handler --on-event fish_command_not_found
-    command-not-found \$argv[1]
-end
-
-function cls
-    clear
 end
 
 # Advanced aliases
@@ -253,43 +245,74 @@ setup_vscode() {
     fi
 }
 
+# Function to install Zsh and configure it
+install_zsh() {
+    echo -e "${Green}Installing Zsh...${Cyan}"
+    sudo apt install -y zsh &
+    spinner $!
+    if [ $? -eq 0 ]; then
+        echo -e "${Green}Zsh installed successfully.${Color_Off}"
+        chsh -s /usr/bin/zsh
+        echo -e "${Green}Zsh set as the default shell.${Color_Off}"
+    else
+        echo -e "${Red}Failed to install Zsh.${Color_Off}"
+    fi
+}
+
+# Function to install Node.js (JavaScript)
+install_nodejs() {
+    echo -e "${Green}Installing Node.js (JavaScript)...${Cyan}"
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt install -y nodejs &
+    spinner $!
+    if [ $? -eq 0 ]; then
+        echo -e "${Green}Node.js installed successfully.${Color_Off}"
+    else
+        echo -e "${Red}Failed to install Node.js.${Color_Off}"
+    fi
+}
+
+# Function to install GitHub CLI
+install_github_cli() {
+    echo -e "${Green}Installing GitHub CLI...${Cyan}"
+    sudo apt install -y gh &
+    spinner $!
+    if [ $? -eq 0 ]; then
+        echo -e "${Green}GitHub CLI installed successfully.${Color_Off}"
+    else
+        echo -e "${Red}Failed to install GitHub CLI.${Color_Off}"
+    fi
+}
+
+# Function to remove old PS1 messages
+remove_old_ps1() {
+    echo -e "${Green}Removing old PS1 messages...${Cyan}"
+    sed -i '/^Welcome to Ubuntu/d' ~/.bashrc
+    sed -i '/^New release/d' ~/.bashrc
+    sed -i '/^Last login/d' ~/.bashrc
+    echo -e "${Green}Old PS1 messages removed.${Color_Off}"
+}
+
 # Main script execution
 clear
 echo -e $Red
 figlet -f slant "Ubuntu Fish Pro"
 echo -e $Color_Off
+echo -e "${Green}Welcome to the Ubuntu Fish Pro Setup Script${Color_Off}"
+echo -e "${Cyan}Please wait while we perform the setup...${Color_Off}"
 echo
 
+# Run functions
 prerequisite
 check_for_updates
-
-# Ask user if they want to add neofetch
-echo -e "${Green}[*] Adding neofetch to homepage...${Red}"
-read -p "Do you want the Ubuntu logo on the homepage? (y/n): " add_neofetch
-
+clear_system_messages
+remove_old_fish_config
 setup_fish_config
+install_starship
+setup_vscode
+install_zsh
+install_nodejs
+install_github_cli
 
-# Ask user if they want to install Starship prompt
-echo -e "${Green}[*] Starship prompt installation...${Red}"
-read -p "Do you want to install the Starship prompt? (y/n): " install_starship_prompt
-if [ "$install_starship_prompt" = "y" ]; then
-    install_starship
-fi
-
-# Ask user if they want to set up VS Code
-echo -e "${Green}[*] VS Code setup...${Red}"
-read -p "Do you want to set up VS Code with Fish integration? (y/n): " setup_vscode_integration
-if [ "$setup_vscode_integration" = "y" ]; then
-    setup_vscode
-fi
-
-# Set fish as the default shell
-echo -e "${Green}[*] Setting fish as the default shell...${Cyan}"
-chsh -s /usr/bin/fish
-
-# Final message and open URL in browser
-echo -e "${Green}Advanced Ubuntu Fish setup complete!\n\nPlease restart your terminal to apply all changes.\n"
-echo -e "For more information, visit ${Blue}${author_url}${Green} and follow ${Blue}${author_handle}${Green}."
-read -p "Press Enter to open the author's page in your browser..."
-open_in_browser "$author_url"
- 
+echo -e "${Green}Setup completed successfully!${Color_Off}"
+echo -e "${Yellow}For support, join our Telegram group: @likhown${Color_Off}"
