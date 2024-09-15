@@ -99,7 +99,6 @@ setup_fish_config() {
     mkdir -p "$HOME/.config/fish"
     cat << EOF > "$config"
 function fish_greeting
-    echo -e "${Yellow}Welcome to your advanced Ubuntu Fish environment!${Color_Off}"
     echo -e "${Cyan}Current Date: $(date)${Color_Off}"
     echo -e "${Green}Uptime: $(uptime -p)${Color_Off}"
     echo
