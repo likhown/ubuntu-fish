@@ -370,7 +370,7 @@ clear
 echo -e $Red
 figlet -f slant "Ubuntu Fish Pro"
 echo -e $Color_Off
-log_message "Welcome to the Advanced Automated Ubuntu Fish Pro Setup Script" "$Green"
+log_message "Welcome to Ubuntu!" "$Green"
 log_message "Starting setup process..." "$Cyan"
 
 # Run functions
